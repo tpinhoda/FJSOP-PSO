@@ -1,15 +1,15 @@
-
-
+clear;
+clc;
 global OPERATIONS = load("benchmarks/op3x3.txt");
 global TIME = load("benchmarks/Tempos3x3.txt");
-global N_PARTICLES = 10;
+global N_PARTICLES = 20;
 global N_OPERATIONS = size(TIME,1);
 global N_MACHINES = size(TIME,2);
 global N_JOBS = size(OPERATIONS,2);
 global BEST_LOCAL = [];
 global POPULATION = [];
 global BEST_GLOBAL = [];
-global MAX_ITERATIONS = 5;
+global MAX_ITERATIONS = 1000;
 
 for op=1:N_OPERATIONS
     machinesOp = find(TIME(op,:)!=0);
@@ -32,25 +32,32 @@ for p=1:N_PARTICLES
 end 
 
 BEST_LOCAL = POPULATION;
-[min index] = min(BEST_LOCAL_FITNESS);
-BEST_GLOBAL = BEST_LOCAL(index);
+[bestFitness index] = min(BEST_LOCAL_FITNESS);
+BEST_GLOBAL = BEST_LOCAL(index,:);
 for i=1:MAX_ITERATIONS
   v = zeros(size(POPULATION));
-  w = rand(N_PARTICLES,1);
+  w = rand(1,N_PARTICLES);
   c1 = rand(N_PARTICLES,1);
   c2 = rand(N_PARTICLES,1);
 
-  v = w*v + bsxfun(@times,(BEST_LOCAL - POPULATION)) + bsxfun(@times,(BEST_GLOBAL - POPULATION));
+  v = w*v + bsxfun(@times,c1,BEST_LOCAL - POPULATION) + bsxfun(@times,c2,BEST_GLOBAL - POPULATION);
 
   POPULATION = round(POPULATION + v);
   POPULATION(POPULATION < 1) = 1;
   POPULATION(POPULATION > N_MACHINES) = N_MACHINES;
-  POPULATION = ValidatePopulation(v);
+  ValidatePopulation(v);
+
   for p=1:N_PARTICLES
     pop_fitness(p) = Fitness(p);
+    if pop_fitness(p) <= BEST_LOCAL_FITNESS(p)
+        BEST_LOCAL(p,:) = POPULATION(p,:);
+        BEST_LOCAL_FITNESS(p) = pop_fitness(p);
+    end
   end
   
-  
+  [bestFitness index] = min(BEST_LOCAL_FITNESS);
+  BEST_GLOBAL = BEST_LOCAL(index,:);
+  disp(bestFitness);
 end
 
 

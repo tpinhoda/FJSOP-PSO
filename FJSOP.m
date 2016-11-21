@@ -1,7 +1,7 @@
 clear;
 clc;
-global OPERATIONS = load("benchmarks/op4x5.txt");
-global TIME = load("benchmarks/Tempos4x5.txt");
+global OPERATIONS = load("benchmarks/op3x3.txt");
+global TIME = load("benchmarks/Tempos3x3.txt");
 global N_PARTICLES = 20;
 global N_OPERATIONS = size(TIME,1);
 global N_MACHINES = size(TIME,2);
@@ -35,12 +35,11 @@ BEST_LOCAL = POPULATION;
 [bestFitness index] = min(BEST_LOCAL_FITNESS);
 BEST_GLOBAL = BEST_LOCAL(index,:);
 for i=1:MAX_ITERATIONS
-%% Busca Local %%
   
+%  for p=1:N_PARTICLES
+%    Invertion(p,0.8);
+%  end
   
-
-
-
   v = zeros(size(POPULATION));
   w = rand(1,N_PARTICLES);
   c1 = rand(N_PARTICLES,1);

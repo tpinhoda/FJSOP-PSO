@@ -10,9 +10,14 @@ function[fit] = Fitness(particleInd)
     jobTime = zeros(1,N_JOBS);
     seq = zeros(max(OPERATIONS),(length(OPERATIONS)));
     for i=1:N_JOBS
-      seq(:,i)=[sum(OPERATIONS(1:i))-OPERATIONS(i)+1:sum(OPERATIONS(1:i))];
+      seqaux = [sum(OPERATIONS(1:i))-OPERATIONS(i)+1:sum(OPERATIONS(1:i))];
+      if length(seqaux) != length(seq)
+        seqaux(length(seqaux)+1:length(seq)) = 0;  
+      end 
+      seq(:,i)=seqaux;
+           
     end
-    seq=reshape(seq,[1,sum(OPERATIONS)]);
+    seq=reshape(seq,[1,length(seq)*length(seq)]);
     heman = ones(1,N_MACHINES);
     for op=seq
        if op != 0
@@ -25,7 +30,9 @@ function[fit] = Fitness(particleInd)
          jobTime(indJob) = cost;
         end 
     end
-    fit = max(max(machineTime,jobTime));
+    maxMachine = max(machineTime);
+    maxJob = max(jobTime);
+    fit = max(maxMachine,maxJob);
 end
 
 function indJob = JobInd (opInd)

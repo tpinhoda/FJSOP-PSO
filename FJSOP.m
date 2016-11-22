@@ -1,8 +1,8 @@
 clear;
 clc;
-global OPERATIONS = load("benchmarks/op3x3.txt");
-global TIME = load("benchmarks/Tempos3x3.txt");
-global N_PARTICLES = 20;
+global OPERATIONS = load("benchmarks/op10x10.txt");
+global TIME = load("benchmarks/Tempos10x10.txt");
+global N_PARTICLES = 40;
 global N_OPERATIONS = size(TIME,1);
 global N_MACHINES = size(TIME,2);
 global N_JOBS = size(OPERATIONS,2);
@@ -35,7 +35,8 @@ BEST_LOCAL = POPULATION;
 [bestFitness index] = min(BEST_LOCAL_FITNESS);
 BEST_GLOBAL = BEST_LOCAL(index,:);
 for i=1:MAX_ITERATIONS
-  
+
+%Busca local invertion na muda =/  
 %  for p=1:N_PARTICLES
 %    Invertion(p,0.8);
 %  end

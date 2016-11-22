@@ -14,7 +14,7 @@ function[fit] = Fitness(particleInd)
       if length(seqaux) != length(seq)
         seqaux(length(seqaux)+1:length(seq)) = 0;  
       end 
-      seq(:,i)=seqaux;
+      seq(i,:)=seqaux;
            
     end
     seq=reshape(seq,[1,length(seq)*length(seq)]);

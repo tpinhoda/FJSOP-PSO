@@ -1,24 +1,24 @@
-function PrintGantt(particleInd)
+function PrintGantt(particle)
     global N_MACHINES;
     global OPERATIONS;
     global N_JOBS;
-    global POPULATION;
     global TIME;
+    global N_OPERATIONS;
     gantt = zeros(N_MACHINES,2*sum(OPERATIONS));
     gantt_op = cell(N_MACHINES,2*sum(OPERATIONS));
     
     fit = 0;
     machineTime = zeros(1, N_MACHINES);
     jobTime = zeros(1,N_JOBS);
-    seq = zeros(max(OPERATIONS),(length(OPERATIONS)));
+    seq = zeros(length(OPERATIONS),max(OPERATIONS));
     for i=1:N_JOBS
-      seq(:,i)=[sum(OPERATIONS(1:i))-OPERATIONS(i)+1:sum(OPERATIONS(1:i))];
+      seq(i,1:OPERATIONS(i))=[sum(OPERATIONS(1:i))-OPERATIONS(i)+1:sum(OPERATIONS(1:i))];
     end
-    seq=reshape(seq,[1,sum(OPERATIONS)]);
+    seq=reshape(seq,[1,length(OPERATIONS)*max(OPERATIONS)]);
     heman = ones(1,N_MACHINES);
     for op=seq
        if op != 0
-         machInd=POPULATION(particleInd, op);
+         machInd=particle(op);
          cost = TIME(op,machInd);
          indJob = JobInd(op);
      

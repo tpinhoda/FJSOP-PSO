@@ -4,35 +4,28 @@ function[fit] = Fitness(particleInd)
     global N_JOBS;
     global POPULATION;
     global TIME;
+    global N_OPERATIONS;
     
     fit = 0;
     machineTime = zeros(1, N_MACHINES);
     jobTime = zeros(1,N_JOBS);
-    seq = zeros(max(OPERATIONS),(length(OPERATIONS)));
+    seq = zeros(length(OPERATIONS),max(OPERATIONS));
     for i=1:N_JOBS
-      seqaux = [sum(OPERATIONS(1:i))-OPERATIONS(i)+1:sum(OPERATIONS(1:i))];
-      if length(seqaux) != length(seq)
-        seqaux(length(seqaux)+1:length(seq)) = 0;  
-      end 
-      seq(i,:)=seqaux;
-           
+      seq(i,1:OPERATIONS(i))=[sum(OPERATIONS(1:i))-OPERATIONS(i)+1:sum(OPERATIONS(1:i))];
     end
-    seq=reshape(seq,[1,length(seq)*length(seq)]);
-    heman = ones(1,N_MACHINES);
+    seq=reshape(seq,[1,length(OPERATIONS)*max(OPERATIONS)]);
     for op=seq
        if op != 0
          machInd=POPULATION(particleInd, op);
          cost = TIME(op,machInd);
          indJob = JobInd(op);
-         heman(machInd) = heman(machInd)+2;
+
          cost = cost + max(machineTime(machInd),jobTime(indJob));
          machineTime(machInd) = cost;
          jobTime(indJob) = cost;
         end 
     end
-    maxMachine = max(machineTime);
-    maxJob = max(jobTime);
-    fit = max(maxMachine,maxJob);
+    fit = max(jobTime);
 end
 
 function indJob = JobInd (opInd)

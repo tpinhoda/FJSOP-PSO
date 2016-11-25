@@ -2,8 +2,10 @@ clear;
 clc;
 more off;
 global OPERATIONS = load("benchmarks/op8x8.txt");
+global OPERATIONS_PERJOB;
+global OPERATIONS_PERJOBCELL;
 global TIME = load("benchmarks/Tempos8x8.txt");
-global N_PARTICLES = 32;
+global N_PARTICLES = 50;
 global N_OPERATIONS = size(TIME,1);
 global N_MACHINES = size(TIME,2);
 global N_JOBS = size(OPERATIONS,2);
@@ -11,67 +13,63 @@ global BEST_LOCAL = [];
 global POPULATION = [];
 global BEST_GLOBAL = [];
 global MAX_ITERATIONS = 1000;
-c0 = 0.4;
-c1 = 0.4;
-c2 = 0.2;
+global c0 = 0.4;
+global c1 = 0.4;
+global c2 = 0.2;
 
-for op=1:N_OPERATIONS
-    
-    machinesOp = find(TIME(op,:)!=0);
+typePopulation = 1;
+typeVelocity = 1;
+typeSearch = 1;
 
-    randArray = randi([1 length(machinesOp)],1,N_PARTICLES);
-    POPULATION = [POPULATION  machinesOp(randArray)'];
-end
-
-OpInMach = cell(N_PARTICLES,N_MACHINES);
-for p=1:N_PARTICLES
-  for m=1:N_MACHINES
-    OpInMach(p,m) = find(POPULATION(p,:) == m);
-  end    
-end
-
-%PrintGantt(5);
-
-for p=1:N_PARTICLES
-  BEST_LOCAL_FITNESS(p) = Fitness(p);
-end 
-
+%%Cria População
+POPULATION = CreatePopulation(typePopulation);
+OPERATIONS_PERJOB = zeros(length(OPERATIONS),max(OPERATIONS));
+OPERATIONS_PERJOBCELL = cell(N_JOBS,1);
+   for i=1:N_JOBS
+      OPERATIONS_PERJOB(i,1:OPERATIONS(i))=[sum(OPERATIONS(1:i))-OPERATIONS(i)+1:sum(OPERATIONS(1:i))];
+      OPERATIONS_PERJOBCELL(i)=[sum(OPERATIONS(1:i))-OPERATIONS(i)+1:sum(OPERATIONS(1:i))];
+   end
+   
+  
+%%Inicializa Lbest e GBest
+BEST_LOCAL_FITNESS = Fitness(POPULATION);
 BEST_LOCAL = POPULATION;
 [bestFitness index] = min(BEST_LOCAL_FITNESS);
 BEST_GLOBAL = BEST_LOCAL(index,:);
+
+%%Comeco da Iterações
 for i=1:MAX_ITERATIONS
- 
-%Busca local invertion na muda =/  
-%  for p=1:N_PARTICLES
-%    Invertion(p,0.8);
-%  end
-  
-  v = ones(size(POPULATION));
-  w = rand(1,N_OPERATIONS)*c0;
-  r1 = rand(1,N_OPERATIONS)*c1;
-  r2 = rand(1,N_OPERATIONS)*c2;
-
-  v = bsxfun(@times,w,v) + bsxfun(@times,r1,BEST_LOCAL - POPULATION) + bsxfun(@times,r2,BEST_GLOBAL - POPULATION);
-
-  POPULATION = round(POPULATION + v);
-  POPULATION(POPULATION < 1) = 1;
-  POPULATION(POPULATION > N_MACHINES) = N_MACHINES;
-
-  ValidatePopulation(v);
-
-  for p=1:N_PARTICLES
-    pop_fitness(p) = Fitness(p);
-    if pop_fitness(p) <= BEST_LOCAL_FITNESS(p)
+    Crossover();
+    
+    parfor p=1:N_PARTICLES
+      BuscaLocal(typeSearch,p);
+      movedFitness = Fitness(POPULATION(p,:));
+      if movedFitness <= BEST_LOCAL_FITNESS(p)
         BEST_LOCAL(p,:) = POPULATION(p,:);
-        BEST_LOCAL_FITNESS(p) = pop_fitness(p);
+        BEST_LOCAL_FITNESS(p) = movedFitness;
+      end
+    end
+  
+  [bestFitness index] = min(BEST_LOCAL_FITNESS);
+  BEST_GLOBAL = BEST_LOCAL(index,:);
+   
+  %Cálculo da velocidade
+   CalculateVelocity(typeVelocity);
+  
+  %Atualização dos lbests e gbests
+  parfor p=1:N_PARTICLES
+    movedFitness = Fitness(POPULATION(p,:));
+    if movedFitness <= BEST_LOCAL_FITNESS(p)
+        BEST_LOCAL(p,:) = POPULATION(p,:);
+        BEST_LOCAL_FITNESS(p) = movedFitness;
     end
   end
   
   [bestFitness index] = min(BEST_LOCAL_FITNESS);
   BEST_GLOBAL = BEST_LOCAL(index,:);
-
+%%  disp(BEST_LOCAL_FITNESS);
   printf("It: %d - Best: %d \n",i,bestFitness);
-  
+  %%---------------------------------  
  
 end
 

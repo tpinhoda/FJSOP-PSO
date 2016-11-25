@@ -4,8 +4,8 @@ function ValidatePopulation(v)
   global N_PARTICLES;
   global N_OPERATIONS;
   global TIME;
-  for p=1:N_PARTICLES
-    for op=1:N_OPERATIONS
+  parfor p=1:N_PARTICLES
+    parfor op=1:N_OPERATIONS
       if v(p,op) !=0
           direction = v(p,op)/(-v(p,op));
           while(TIME(op,POPULATION(p,op)) == 0)

@@ -15,6 +15,7 @@ function PrintGantt(particle,schedule)
     jobTime = zeros(1,N_JOBS);
      
     counter = ones(1,N_JOBS);
+    counterMach = ones(1,N_MACHINES);
     ncount = 0;
     schedArray = cell2mat(schedule);
     heman = ones(1,N_MACHINES);
@@ -24,6 +25,9 @@ function PrintGantt(particle,schedule)
         op = schedArray(i);
         if (op != 0 && counter(JOB_ID(op)) == OPERATIONS_ID(op))
          machInd= particle(op);
+         schedule{machInd}(counterMach(machInd)) = op;
+         counterMach(machInd)++;
+         
          cost = TIME(op,machInd);
           
          gantt_op(machInd,(heman(machInd)+1)/2) = ["J" num2str(JOB_ID(op)) "," num2str(OPERATIONS_ID(op))];
@@ -41,6 +45,7 @@ function PrintGantt(particle,schedule)
       end
     end  
     makespan = max(jobTime);
+    disp(schedule);
     Gantt(gantt,gantt_op,N_MACHINES);
 end
 

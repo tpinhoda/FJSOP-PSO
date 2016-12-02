@@ -1,12 +1,12 @@
 clear;
 clc;
 more off;
-global OPERATIONS = load("benchmarks/op8x8.txt");
+global OPERATIONS = load("benchmarks/op4x5.txt");
 global OPERATIONS_PERJOB;
 global OPERATIONS_PERJOBCELL;
 global OPERATIONS_ID;
 global JOB_ID;
-global TIME = load("benchmarks/Tempos8x8.txt");
+global TIME = load("benchmarks/tempos4x5.txt");
 global N_PARTICLES = 50;
 global N_OPERATIONS = size(TIME,1);
 global N_MACHINES = size(TIME,2);
@@ -15,9 +15,9 @@ global BEST_LOCAL = [];
 global POPULATION = [];
 global BEST_GLOBAL = [];
 global MAX_ITERATIONS = 1000;
-global c0 = 0.1;
-global c1 = 0.4;
-global c2 = 0.5;
+global c0 = 0.6;
+global c1 = 1.29;
+global c2 = 1.29;
 global SCHEDULE = cell(N_PARTICLES,N_MACHINES);
 
 typePopulation = 2;
@@ -41,6 +41,7 @@ function setIDs()
     end  
 end
 
+tic
 %%Cria População
 POPULATION = CreatePopulation(typePopulation);
 OPERATIONS_PERJOB = zeros(length(OPERATIONS),max(OPERATIONS));
@@ -68,13 +69,10 @@ for i=1:MAX_ITERATIONS
    CalculateVelocity(typeVelocity);
   
   %Atualização dos lbests e gbests
-  parfor p=1:N_PARTICLES
-    movedFitness = BuscaLocal(POPULATION(p,:));
-    if movedFitness <= BEST_LOCAL_FITNESS(p)
-        BEST_LOCAL(p,:) = POPULATION(p,:);
-        BEST_LOCAL_FITNESS(p) = movedFitness;
-    end
-  end
+  movedFitness = BuscaLocal(POPULATION);
+  improved = find(movedFitness <= BEST_LOCAL_FITNESS);
+  BEST_LOCAL(improved,:) = POPULATION(improved,:);
+  BEST_LOCAL_FITNESS(improved) = movedFitness(improved);
   
   [newbestFitness index] = min(BEST_LOCAL_FITNESS);
   if newbestFitness == bestFitness
@@ -85,26 +83,25 @@ for i=1:MAX_ITERATIONS
   end  
   if coutFit == 20
     POPULATION = CreatePopulation(typePopulation);
-      parfor p=1:N_PARTICLES
-    movedFitness = BuscaLocal(POPULATION(p,:));
-    if movedFitness <= BEST_LOCAL_FITNESS(p)
-        BEST_LOCAL(p,:) = POPULATION(p,:);
-        BEST_LOCAL_FITNESS(p) = movedFitness;
-    end
-  end
+    movedFitness = BuscaLocal(POPULATION);
+    improved = find(movedFitness <= BEST_LOCAL_FITNESS);
+    BEST_LOCAL(improved,:) = POPULATION(improved,:);
+    BEST_LOCAL_FITNESS(improved) = movedFitness(improved);
   
-  [newbestFitness index] = min(BEST_LOCAL_FITNESS);
-
+    [bestFitness index] = min(BEST_LOCAL_FITNESS);
     coutFit = 0;
   end
-  disp(coutFit); 
-  BEST_GLOBAL = BEST_LOCAL(index,:);
+  %%disp(coutFit); 
+    BEST_GLOBAL = BEST_LOCAL(index,:);
  %% disp(POPULATION);
+ disp(POPULATION);
+ disp(BEST_GLOBAL);
 %%
   printf("It: %d - Best: %d \n",i,bestFitness);
   %%---------------------------------  
  
 end
+toc
 
 
 

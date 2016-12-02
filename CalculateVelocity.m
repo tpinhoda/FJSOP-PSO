@@ -37,9 +37,10 @@ function GeneralVelocity()
   
   for p=1:N_PARTICLES
    for mach=1:N_MACHINES
+      
       time  = TIME;
         time(time==0) = 1000;
-        
+        machSchedule = [];
         arrayMach = find(POPULATION(p,:)==mach);
         for ind=1:length(arrayMach);
           [cost index] = min(time(arrayMach,mach));

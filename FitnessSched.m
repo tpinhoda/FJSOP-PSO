@@ -1,4 +1,9 @@
-function PrintGantt(particle,schedule)
+function [fitness] = FitnessSched(particle, schedule)
+      fitness = MakeSpanSched(particle, schedule);
+end
+
+
+function[makespan] = MakeSpanSched(particle,schedule)
     global N_MACHINES;
     global OPERATIONS;
     global N_JOBS;
@@ -7,9 +12,6 @@ function PrintGantt(particle,schedule)
     global OPERATIONS_PERJOB;
     global OPERATIONS_ID;
     global JOB_ID;
-    
-    gantt = zeros(N_MACHINES,2*sum(OPERATIONS));
-    gantt_op = cell(N_MACHINES,2*sum(OPERATIONS));
     
     machineTime = zeros(1, N_MACHINES);
     jobTime = zeros(1,N_JOBS);
@@ -25,11 +27,6 @@ function PrintGantt(particle,schedule)
         if (op != 0 && counter(JOB_ID(op)) == OPERATIONS_ID(op))
          machInd= particle(op);
          cost = TIME(op,machInd);
-          
-         gantt_op(machInd,(heman(machInd)+1)/2) = ["J" num2str(JOB_ID(op)) "," num2str(OPERATIONS_ID(op))];
-         gantt(machInd,heman(machInd))= max(machineTime(machInd),jobTime(JOB_ID(op)));
-         gantt(machInd,heman(machInd)+1)= cost + max(machineTime(machInd),jobTime(JOB_ID(op)));
-         heman(machInd) = heman(machInd)+2;
 
           cost = cost + max(machineTime(machInd),jobTime(JOB_ID(op)));
           machineTime(machInd) = cost;
@@ -41,15 +38,4 @@ function PrintGantt(particle,schedule)
       end
     end  
     makespan = max(jobTime);
-    Gantt(gantt,gantt_op,N_MACHINES);
-end
-
-function indJob = JobInd (opInd)
-    global OPERATIONS;
-    cumSum = OPERATIONS(1);
-    indJob = 1;
-    while cumSum < opInd
-        indJob = indJob + 1;
-        cumSum = cumSum + OPERATIONS(indJob);
-    end     
 end

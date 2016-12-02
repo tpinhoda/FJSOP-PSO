@@ -1,32 +1,37 @@
-function BuscaLocal(type,indexParticle)
-  
-  switch type
-    case 1 
-      if(rand() <0.5)
-        SwappedNeighbors(indexParticle);
-      end  
+function [fitness] = BuscaLocal(population)
+  global N_PARTICLES;
+  parfor p = 1:size(population,1)
+    fitness(p) = NeighborhoodSearch(population(p,:)); 
   end  
-  
 end
 
-function SwappedNeighbors(indexParticle)
-    global POPULATION;
+function fitness = NeighborhoodSearch(particle)
     global N_MACHINES;
-    particle = POPULATION(indexParticle,:);
+    global JOB_ID;
+    pSchedule = cell(1,N_MACHINES);
     for mach=1:N_MACHINES
-      machIndex = find(particle==mach);
-      for i=1:length(machIndex)-1
-        neighbor = swap(particle,i,i+1);
-        neifit = Fitness(neighbor);
-        partfit = Fitness(particle);
-        printf("nei: %d -- part: %d \n",neifit,partfit);
-        if neifit < partfit
-            
-           particle = neighbor; 
+      pSchedule(mach) = find(particle==mach);
+    end
+    pFit = FitnessSched(particle, pSchedule);
+    machSequence = randperm(N_MACHINES);
+    for mach=machSequence
+      nSchedule = pSchedule;
+      for i=1:size(nSchedule{mach},2)-1
+        for j = i+1:size(nSchedule{mach},2)
+          if JOB_ID(nSchedule{mach}(i)) != JOB_ID(nSchedule{mach}(j))
+            nSchedule{mach}([i j]) = nSchedule{mach}([j i]);
+            nFit = FitnessSched(particle, nSchedule);
+            if(nFit < pFit)
+              pFit = nFit;
+              pSchedule = nSchedule;
+            else
+              nSchedule = pSchedule;
+            end
+          end
         end
       end
     end
-    POPULATION(indexParticle,:) = particle;
+    fitness = pFit;
 end
 
 function [particle] = swap(particle,i,j)

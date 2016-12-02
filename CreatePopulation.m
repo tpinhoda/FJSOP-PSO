@@ -1,7 +1,8 @@
 function [population] = CreatePopulation(type)
-  
+  perc = 0.1;
   switch type
     case 1 population = RandomPopulation();
+    case 2 population = EstPopulation(perc);
   end  
   
 end
@@ -19,3 +20,41 @@ function [population] = RandomPopulation()
       population = [population  machinesOp(randArray)'];
   end
 end  
+
+function [population] = EstPopulation(perc)
+  global N_OPERATIONS;
+  global N_PARTICLES;
+  global N_MACHINES;
+  global TIME;
+  population = zeros(N_PARTICLES, N_OPERATIONS);
+  
+  time = TIME;
+  time(time==0)=10000;
+  
+  for p=1:N_PARTICLES
+    opSequence = randperm(N_OPERATIONS);
+    machSequence = randperm(N_MACHINES);
+    for k=1:round(N_OPERATIONS*perc)
+      [op mach] = find(time==min(min(time)));
+      population(p, op(1))=mach(1);
+      time(:,mach(1))= time(:,mach(1)) + time(op(1),mach(1));
+      time(op(1),:)=10000;
+    end  
+    for op=opSequence
+      if population(p,op) == 0
+        mInd = machSequence(1);
+        lowTime = time(op,machSequence(1));
+        for mach=machSequence(2:N_MACHINES)
+          if time(op,mach) < lowTime
+            lowTime = time(op,mach);
+            mInd = mach;
+          end
+        end
+        time(:,mInd)+=lowTime;
+        population(p, op)=mInd;
+      end  
+    end
+  end
+end  
+        
+        

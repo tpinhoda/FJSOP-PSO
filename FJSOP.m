@@ -15,9 +15,10 @@ global BEST_LOCAL = [];
 global POPULATION = [];
 global BEST_GLOBAL = [];
 global MAX_ITERATIONS = 1000;
-global c0 = 0.4;
+global c0 = 0.1;
 global c1 = 0.4;
-global c2 = 0.2;
+global c2 = 0.5;
+global SCHEDULE = cell(N_PARTICLES,N_MACHINES);
 
 typePopulation = 2;
 typeVelocity = 1;
@@ -57,6 +58,8 @@ BEST_LOCAL = POPULATION;
 [bestFitness index] = min(BEST_LOCAL_FITNESS);
 BEST_GLOBAL = BEST_LOCAL(index,:);
 
+coutFit = 0;
+bestFitness = 0;
 %%Comeco da Iterações
 for i=1:MAX_ITERATIONS
     
@@ -73,9 +76,31 @@ for i=1:MAX_ITERATIONS
     end
   end
   
-  [bestFitness index] = min(BEST_LOCAL_FITNESS);
+  [newbestFitness index] = min(BEST_LOCAL_FITNESS);
+  if newbestFitness == bestFitness
+    coutFit +=1;
+  else
+    bestFitness = newbestFitness;
+    coutFit = 0;
+  end  
+  if coutFit == 20
+    POPULATION = CreatePopulation(typePopulation);
+      parfor p=1:N_PARTICLES
+    movedFitness = BuscaLocal(POPULATION(p,:));
+    if movedFitness <= BEST_LOCAL_FITNESS(p)
+        BEST_LOCAL(p,:) = POPULATION(p,:);
+        BEST_LOCAL_FITNESS(p) = movedFitness;
+    end
+  end
+  
+  [newbestFitness index] = min(BEST_LOCAL_FITNESS);
+
+    coutFit = 0;
+  end
+  disp(coutFit); 
   BEST_GLOBAL = BEST_LOCAL(index,:);
-%%  disp(BEST_LOCAL_FITNESS);
+ %% disp(POPULATION);
+%%
   printf("It: %d - Best: %d \n",i,bestFitness);
   %%---------------------------------  
  

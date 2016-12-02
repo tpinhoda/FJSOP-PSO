@@ -26,6 +26,7 @@ function [population] = EstPopulation(perc)
   global N_PARTICLES;
   global N_MACHINES;
   global TIME;
+  global SCHEDULE
   population = zeros(N_PARTICLES, N_OPERATIONS);
   
   time = TIME;
@@ -54,6 +55,21 @@ function [population] = EstPopulation(perc)
         population(p, op)=mInd;
       end  
     end
+    
+    for mach=1:N_MACHINES
+        time  = TIME;
+        time(time==0) = 1000;
+        
+        arrayMach = find(population(p,:)==mach);
+        for ind=1:length(arrayMach);
+          [cost index] = min(time(arrayMach,mach));
+          machSchedule(ind) = arrayMach(index);
+          time(arrayMach(index),mach) = 1000;         
+         end 
+          
+       SCHEDULE(p,mach) = machSchedule;
+    end
+    
   end
 end  
         

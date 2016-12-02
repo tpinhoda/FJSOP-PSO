@@ -13,6 +13,9 @@ function GeneralVelocity()
   global BEST_LOCAL;
   global N_MACHINES;
   global N_OPERATIONS;
+  global SCHEDULE;
+  global N_PARTICLES;
+  global TIME;
   global c0;
   global c1;
   global c2;
@@ -31,4 +34,20 @@ function GeneralVelocity()
   POPULATION(POPULATION > N_MACHINES) = N_MACHINES;
 
   ValidatePopulation(v);
+  
+  for p=1:N_PARTICLES
+   for mach=1:N_MACHINES
+      time  = TIME;
+        time(time==0) = 1000;
+        
+        arrayMach = find(POPULATION(p,:)==mach);
+        for ind=1:length(arrayMach);
+          [cost index] = min(time(arrayMach,mach));
+          machSchedule(ind) = arrayMach(index);
+          time(arrayMach(index),mach) = 1000;         
+         end 
+          
+       SCHEDULE(p,mach) = machSchedule;
+   end
+  end 
 end  

@@ -1,9 +1,8 @@
 function [fitness] = BuscaLocal(population)
-  global N_PARTICLES;
-  removeCritcalPath(population(39,:),39);
-%  parfor p = 1:size(population,1)
-%    fitness(p) = NeighborhoodSearch(population(p,:),p); 
-%  end  
+
+  for p = 1:size(population,1)
+    fitness(p) = SA(population(p,:),p); 
+  end  
 end
 
 function fitness = NeighborhoodSearch(particle,indexparticle)
@@ -36,7 +35,43 @@ function fitness = NeighborhoodSearch(particle,indexparticle)
     fitness = pFit;
 end
 
-function [criticalPath] = removeCritcalPath(particle,indexparticle)
+function fitness = RemoveCriticalPath(particle,indexparticle)
+    global N_MACHINES;
+    global JOB_ID;
+    global SCHEDULE;
+    global POPULATION;
+    global N_OPERATIONS;
+    global OPERATIONS;
+    
+    [pFit SCHEDULE(indexparticle,:) gantt]  = FitnessSched(particle, SCHEDULE(indexparticle,:));
+    criticalPath = findCritcalPath(particle,indexparticle);
+    schedule = SCHEDULE(indexparticle,:);
+    for op=1:N_OPERATIONS
+      if criticalPath(op)!=0
+          mach=particle(op);
+          pos=find(schedule{mach}==op);
+          if pos < length(schedule{mach})
+            pos2 = pos+1;
+          else
+            pos2 = 1;
+          end
+          if JOB_ID(pos) != JOB_ID(pos2)
+              nSchedule = schedule;
+              nSchedule{mach}([pos pos2]) = nSchedule{mach}([pos2 pos]);
+              [nFit nSchedule gantt]  = FitnessSched(particle, nSchedule);
+              if nFit < pFit
+                pFit = nFit;
+                schedule = nSchedule;
+                SCHEDULE(indexparticle,:) = schedule;
+                criticalPath = findCritcalPath(particle,indexparticle);
+              end  
+          end  
+      end  
+    end  
+    fitness = pFit;   
+ end
+
+function [criticalPath] = findCritcalPath(particle,indexparticle)
     global N_JOBS;
     global TIME;
     global N_MACHINES;
@@ -58,9 +93,72 @@ function [criticalPath] = removeCritcalPath(particle,indexparticle)
         end  
       end
     end 
-   disp(criticalPath); 
-   
 end
+
+
+function [fitness] = SA(particle,indexparticle)
+  global SCHEDULE;
+  global N_OPERATIONS;
+  global JOB_ID;
+  [bestSolCost SCHEDULE(indexparticle,:) gantt]  = FitnessSched(particle, SCHEDULE(indexparticle,:));
+  bestSol = SCHEDULE(indexparticle,:);
+  acceptedSol = SCHEDULE(indexparticle,:);
+  acceptedSolCost = bestSolCost;
+  iterations = 500;
+  minTotalIteration = 50; 
+  alpha = 0.85;
+  T = 3;
+  counter = 0;
+  while counter < minTotalIteration
+    for i=1:iterations
+      counter = counter + 1;
+      %%new solution!!
+      criticalPath = findCritcalPath(particle,indexparticle);
+      op = randi(N_OPERATIONS);
+      while criticalPath(op)!=1
+        op = randi(N_OPERATIONS);
+      end 
+      
+      mach=particle(op);
+      pos=find(SCHEDULE{indexparticle,mach}==op);
+      if pos < length(SCHEDULE{indexparticle,mach})
+         pos2 = pos+1;
+      else
+         pos2 = 1;
+      end
+      if JOB_ID(pos) != JOB_ID(pos2)
+        nSchedule = SCHEDULE(indexparticle,:);
+        nSchedule{mach}([pos pos2]) = nSchedule{mach}([pos2 pos]);
+        [newSolCost newSol gant] = FitnessSched(particle,nSchedule);
+    %% end new solution -----------
+    
+        deltaCost = newSolCost - acceptedSolCost;
+        if deltaCost < 0
+          SCHEDULE(indexparticle,:) = newSol;
+          acceptedSolCost = newSolCost;
+        else
+          randVal = rand(1);
+          p = exp(-1*deltaCost / T);
+          if p > randVal
+            SCHEDULE(indexparticle,:) = newSol;
+            acceptedSolCost = newSolCost;
+          end
+        end
+
+        % record the cost value in to history
+      
+        % Update current best value
+        if acceptedSolCost < bestSolCost
+           bestSol = SCHEDULE(particle,:);
+           bestSolCost = acceptedSolCost;
+        end
+       end 
+    end
+    T = T * alpha; % cooling
+  end
+  fitness = bestSolCost
+end
+
 
 function [particle] = swap(particle,i,j)
     particle([i j]) = particle([j i]);

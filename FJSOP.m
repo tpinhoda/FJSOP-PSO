@@ -7,7 +7,7 @@ global OPERATIONS_PERJOBCELL;
 global OPERATIONS_ID;
 global JOB_ID;
 global TIME = load("benchmarks/tempos4x5.txt");
-global N_PARTICLES = 50;
+global N_PARTICLES = 10;
 global N_OPERATIONS = size(TIME,1);
 global N_MACHINES = size(TIME,2);
 global N_JOBS = size(OPERATIONS,2);
@@ -15,9 +15,9 @@ global BEST_LOCAL = [];
 global POPULATION = [];
 global BEST_GLOBAL = [];
 global MAX_ITERATIONS = 1000;
-global c0 = 0.6;
-global c1 = 1.29;
-global c2 = 1.29;
+global c0 = 0.1;
+global c1 = 0.4;
+global c2 = 0.6;
 global SCHEDULE = cell(N_PARTICLES,N_MACHINES);
 
 typePopulation = 2;
@@ -81,7 +81,7 @@ for i=1:MAX_ITERATIONS
     bestFitness = newbestFitness;
     coutFit = 0;
   end  
-  if coutFit == 20
+  if coutFit == 5
     POPULATION = CreatePopulation(typePopulation);
     movedFitness = BuscaLocal(POPULATION);
     improved = find(movedFitness <= BEST_LOCAL_FITNESS);
@@ -94,8 +94,8 @@ for i=1:MAX_ITERATIONS
   %%disp(coutFit); 
     BEST_GLOBAL = BEST_LOCAL(index,:);
  %% disp(POPULATION);
- disp(POPULATION);
- disp(BEST_GLOBAL);
+% disp(POPULATION);
+% disp(BEST_GLOBAL);
 %%
   printf("It: %d - Best: %d \n",i,bestFitness);
   %%---------------------------------  

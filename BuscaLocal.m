@@ -46,16 +46,15 @@ function fitness = RemoveCriticalPath(particle,indexparticle)
     [pFit SCHEDULE(indexparticle,:) gantt]  = FitnessSched(particle, SCHEDULE(indexparticle,:));
     criticalPath = findCritcalPath(particle,indexparticle);
     schedule = SCHEDULE(indexparticle,:);
-    for op=1:N_OPERATIONS
-      if criticalPath(op)!=0
+    for op=1:N_OPERATIONS-1
+      if JOB_ID(op)==JOB_ID(op+1) && criticalPath(op)!=0 && criticalPath(op+1) !=0
           mach=particle(op);
           pos=find(schedule{mach}==op);
-          if pos < length(schedule{mach})
+          pos2=1;
+          if size(SCHEDULE{indexparticle,mach},2) > pos
             pos2 = pos+1;
-          else
-            pos2 = 1;
-          end
-          if JOB_ID(pos) != JOB_ID(pos2)
+          end  
+          if if JOB_ID(SCHEDULE{indexparticle,mach}(pos)) != JOB_ID(SCHEDULE{indexparticle,mach}(pos2))
               nSchedule = schedule;
               nSchedule{mach}([pos pos2]) = nSchedule{mach}([pos2 pos]);
               [nFit nSchedule gantt]  = FitnessSched(particle, nSchedule);
@@ -114,45 +113,47 @@ function [fitness] = SA(particle,indexparticle)
       counter = counter + 1;
       %%new solution!!
       criticalPath = findCritcalPath(particle,indexparticle);
-      op = randi(N_OPERATIONS);
+      op = randi(N_OPERATIONS-1);
       while criticalPath(op)!=1
-        op = randi(N_OPERATIONS);
+        op = randi(N_OPERATIONS-1);
       end 
+      if (JOB_ID(op) == JOB_ID(op+1) && criticalPath(op)==1 && criticalPath(op+1) ==1)
+        %%printf("op %d\n",op);
+        mach=particle(op);
+        pos=find(SCHEDULE{indexparticle,mach}==op);
+        pos2=1;
+        if size(SCHEDULE{indexparticle,mach},2) > pos
+          pos2 = pos+1;
+        end  
+        if JOB_ID(SCHEDULE{indexparticle,mach}(pos)) != JOB_ID(SCHEDULE{indexparticle,mach}(pos2))
+          nSchedule = SCHEDULE(indexparticle,:);
+          %%disp(nSchedule);
+          nSchedule{mach}([pos pos2]) = nSchedule{mach}([pos2 pos]);
+          [newSolCost newSol gant] = FitnessSched(particle,nSchedule);
+      %% end new solution -----------
       
-      mach=particle(op);
-      pos=find(SCHEDULE{indexparticle,mach}==op);
-      if pos < length(SCHEDULE{indexparticle,mach})
-         pos2 = pos+1;
-      else
-         pos2 = 1;
-      end
-      if JOB_ID(pos) != JOB_ID(pos2)
-        nSchedule = SCHEDULE(indexparticle,:);
-        nSchedule{mach}([pos pos2]) = nSchedule{mach}([pos2 pos]);
-        [newSolCost newSol gant] = FitnessSched(particle,nSchedule);
-    %% end new solution -----------
-    
-        deltaCost = newSolCost - acceptedSolCost;
-        if deltaCost < 0
-          SCHEDULE(indexparticle,:) = newSol;
-          acceptedSolCost = newSolCost;
-        else
-          randVal = rand(1);
-          p = exp(-1*deltaCost / T);
-          if p > randVal
+          deltaCost = newSolCost - acceptedSolCost;
+          if deltaCost < 0
             SCHEDULE(indexparticle,:) = newSol;
             acceptedSolCost = newSolCost;
+          else
+            randVal = rand(1);
+            p = exp(-1*deltaCost / T);
+            if p > randVal
+              SCHEDULE(indexparticle,:) = newSol;
+              acceptedSolCost = newSolCost;
+            end
           end
-        end
 
-        % record the cost value in to history
-      
-        % Update current best value
-        if acceptedSolCost < bestSolCost
-           bestSol = SCHEDULE(particle,:);
-           bestSolCost = acceptedSolCost;
-        end
-       end 
+          % record the cost value in to history
+        
+          % Update current best value
+          if acceptedSolCost < bestSolCost
+             bestSol = SCHEDULE(particle,:);
+             bestSolCost = acceptedSolCost;
+          end
+         end
+      end 
     end
     T = T * alpha; % cooling
   end

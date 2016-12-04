@@ -1,12 +1,12 @@
 clear;
 clc;
 more off;
-global OPERATIONS = load("benchmarks/op4x5.txt");
+global OPERATIONS = load("benchmarks/op8x8.txt");
 global OPERATIONS_PERJOB;
 global OPERATIONS_PERJOBCELL;
 global OPERATIONS_ID;
 global JOB_ID;
-global TIME = load("benchmarks/tempos4x5.txt");
+global TIME = load("benchmarks/tempos8x8.txt");
 global N_PARTICLES = 10;
 global N_OPERATIONS = size(TIME,1);
 global N_MACHINES = size(TIME,2);

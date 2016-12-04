@@ -7,7 +7,7 @@ global OPERATIONS_PERJOBCELL;
 global OPERATIONS_ID;
 global JOB_ID;
 global TIME = load("benchmarks/tempos8x8.txt");
-global N_PARTICLES = 10;
+global N_PARTICLES = 30;
 global N_OPERATIONS = size(TIME,1);
 global N_MACHINES = size(TIME,2);
 global N_JOBS = size(OPERATIONS,2);
@@ -15,7 +15,7 @@ global BEST_LOCAL = [];
 global POPULATION = [];
 global BEST_GLOBAL = [];
 global MAX_ITERATIONS = 1000;
-global c0 = 0.1;
+global c0 = 0.2;
 global c1 = 0.4;
 global c2 = 0.6;
 global SCHEDULE = cell(N_PARTICLES,N_MACHINES);
@@ -40,7 +40,7 @@ function setIDs()
       OPERATIONS_ID(i)=OPERATIONS(indJob) - (cumulativeSum - i);
     end  
 end
-
+hist = [];
 tic
 %%Cria População
 POPULATION = CreatePopulation(typePopulation);
@@ -98,6 +98,7 @@ for i=1:MAX_ITERATIONS
 % disp(BEST_GLOBAL);
 %%
   printf("It: %d - Best: %d \n",i,bestFitness);
+  hist = [hist bestFitness];
   %%---------------------------------  
  
 end

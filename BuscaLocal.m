@@ -1,7 +1,7 @@
 function [fitness] = BuscaLocal(population)
 
   for p = 1:size(population,1)
-    fitness(p) = SA(population(p,:),p); 
+    fitness(p) = NeighborhoodSearch(population(p,:),p);
   end  
 end
 
@@ -54,7 +54,7 @@ function fitness = RemoveCriticalPath(particle,indexparticle)
           if size(SCHEDULE{indexparticle,mach},2) > pos
             pos2 = pos+1;
           end  
-          if if JOB_ID(SCHEDULE{indexparticle,mach}(pos)) != JOB_ID(SCHEDULE{indexparticle,mach}(pos2))
+          if JOB_ID(SCHEDULE{indexparticle,mach}(pos)) != JOB_ID(SCHEDULE{indexparticle,mach}(pos2))
               nSchedule = schedule;
               nSchedule{mach}([pos pos2]) = nSchedule{mach}([pos2 pos]);
               [nFit nSchedule gantt]  = FitnessSched(particle, nSchedule);

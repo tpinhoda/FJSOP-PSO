@@ -1,18 +1,18 @@
 function [fitness] = BuscaLocal(population)
-
+  %%Executa a busca local para cada particula
   for p = 1:size(population,1)
     fitness(p) = NeighborhoodSearch(population(p,:),p);
   end  
 end
 
 function fitness = NeighborhoodSearch(particle,indexparticle)
+  %%Executa a busca local gulosa, fazendo sucessivas trocas entre operações vizinhas
     global N_MACHINES;
     global JOB_ID;
     global SCHEDULE;
     global POPULATION;
     
     [pFit SCHEDULE(indexparticle,:) gantt]  = FitnessSched(particle, SCHEDULE(indexparticle,:));
-    %%disp(SCHEDULE(50,:));
     machSequence = randperm(N_MACHINES);
     for mach=machSequence
       nSchedule = SCHEDULE(indexparticle,:);
@@ -22,7 +22,6 @@ function fitness = NeighborhoodSearch(particle,indexparticle)
             nSchedule{mach}([i j]) = nSchedule{mach}([j i]);
             [nFit nSchedule] = FitnessSched(particle, nSchedule);
             if(nFit < pFit)
-      %%        printf("%d - %d\n",pFit,nFit);
                 pFit = nFit;
                 SCHEDULE(indexparticle,:) = nSchedule;
             else
@@ -36,6 +35,7 @@ function fitness = NeighborhoodSearch(particle,indexparticle)
 end
 
 function fitness = RemoveCriticalPath(particle,indexparticle)
+  %%Executa busca local removendo operações em caminhos críticos
     global N_MACHINES;
     global JOB_ID;
     global SCHEDULE;
@@ -71,6 +71,7 @@ function fitness = RemoveCriticalPath(particle,indexparticle)
  end
 
 function [criticalPath] = findCritcalPath(particle,indexparticle)
+  %%Encontra o caminho crítico de um determinado agendamento
     global N_JOBS;
     global TIME;
     global N_MACHINES;
@@ -96,6 +97,7 @@ end
 
 
 function [fitness] = SA(particle,indexparticle)
+  %%Executa a busca local simulated anneling
   global SCHEDULE;
   global N_OPERATIONS;
   global JOB_ID;
@@ -118,7 +120,6 @@ function [fitness] = SA(particle,indexparticle)
         op = randi(N_OPERATIONS-1);
       end 
       if (JOB_ID(op) == JOB_ID(op+1) && criticalPath(op)==1 && criticalPath(op+1) ==1)
-        %%printf("op %d\n",op);
         mach=particle(op);
         pos=find(SCHEDULE{indexparticle,mach}==op);
         pos2=1;

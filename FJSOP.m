@@ -1,30 +1,33 @@
 clear;
 clc;
 more off;
-global OPERATIONS = load("benchmarks/op8x8.txt");
-global OPERATIONS_PERJOB;
-global OPERATIONS_PERJOBCELL;
-global OPERATIONS_ID;
-global JOB_ID;
-global TIME = load("benchmarks/tempos8x8.txt");
-global N_PARTICLES = 30;
-global N_OPERATIONS = size(TIME,1);
-global N_MACHINES = size(TIME,2);
-global N_JOBS = size(OPERATIONS,2);
-global BEST_LOCAL = [];
-global POPULATION = [];
-global BEST_GLOBAL = [];
-global MAX_ITERATIONS = 1000;
-global c0 = 0.2;
-global c1 = 0.4;
-global c2 = 0.6;
-global SCHEDULE = cell(N_PARTICLES,N_MACHINES);
+global OPERATIONS = load("benchmarks/op4x5.txt");
+global TIME = load("benchmarks/tempos4x5.txt");
 
-typePopulation = 2;
-typeVelocity = 1;
-typeSearch = 2;
+global OPERATIONS_PERJOB;     %%Operações de cada job
+global OPERATIONS_PERJOBCELL; %%Operações feitas por cada máquina
+global OPERATIONS_ID;         %%Index de cada operação no roteamento 
+global JOB_ID;                %%Index de cada operção no seu job
+
+global N_PARTICLES = 30;            %%Número de partículas que a nuvem terá
+global N_OPERATIONS = size(TIME,1); %%Quantidade de operções
+global N_MACHINES = size(TIME,2);   %%Quantidade  de máquinas
+global N_JOBS = size(OPERATIONS,2); %%Quantidade de jobs
+global BEST_LOCAL = [];             %%Matriz de melhores locais
+global POPULATION = [];             %%Nuvem de partículas
+global BEST_GLOBAL = [];            %%Melhor partícula
+global MAX_ITERATIONS = 1000;       %%Quantidade de iterções do PSO
+global c0 = 0.2;                    %%Probabilidade da partícula seguir seu caminho
+global c1 = 0.4;                    %%Probabilidade da partícula seguir para o melhor local
+global c2 = 0.6;                    %%Probabilidade da partícula seguir para o melhor global
+global SCHEDULE = cell(N_PARTICLES,N_MACHINES); %%Matriz que possui o agendamento de todas as partículas da nuvem
+
+typePopulation = 2;                 %%
+typeVelocity = 1;                   %%Tipos de algoritmos escolhidos (Ver scripts)
+typeSearch = 2;                     %%  
 
 function setIDs()
+ %%Função que cria os vetores JOB_ID e OPERATIONS_ID 
     global OPERATIONS;
     global N_OPERATIONS;
     global OPERATIONS_ID;
@@ -42,7 +45,7 @@ function setIDs()
 end
 hist = [];
 tic
-%%Cria PopulaÃ§Ã£o
+%%Cria População
 POPULATION = CreatePopulation(typePopulation);
 OPERATIONS_PERJOB = zeros(length(OPERATIONS),max(OPERATIONS));
 OPERATIONS_PERJOBCELL = cell(N_JOBS,1);
@@ -61,14 +64,14 @@ BEST_GLOBAL = BEST_LOCAL(index,:);
 
 coutFit = 0;
 bestFitness = 0;
-%%Comeco da IteraÃ§Ãµes
+%%Comeco da Iterações
 for i=1:MAX_ITERATIONS
     
 
-  %CÃ¡lculo da velocidade
+  %Cálculo da velocidade
    CalculateVelocity(typeVelocity);
   
-  %AtualizaÃ§Ã£o dos lbests e gbests
+  %Atualização dos lbests e gbests
   movedFitness = BuscaLocal(POPULATION);
   improved = find(movedFitness <= BEST_LOCAL_FITNESS);
   BEST_LOCAL(improved,:) = POPULATION(improved,:);
@@ -91,12 +94,9 @@ for i=1:MAX_ITERATIONS
     [bestFitness index] = min(BEST_LOCAL_FITNESS);
     coutFit = 0;
   end
-  %%disp(coutFit); 
+ 
     BEST_GLOBAL = BEST_LOCAL(index,:);
- %% disp(POPULATION);
-% disp(POPULATION);
-% disp(BEST_GLOBAL);
-%%
+
   printf("It: %d - Best: %d \n",i,bestFitness);
   hist = [hist bestFitness];
   %%---------------------------------  

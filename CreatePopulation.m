@@ -1,6 +1,7 @@
 function [population] = CreatePopulation(type)
   perc = 0.1;
   switch type
+    %%Escolhe-se o tipo de algoritmo, se é aleatório ou estocástico
     case 1 population = RandomPopulation();
     case 2 population = EstPopulation(perc);
   end  
@@ -8,6 +9,7 @@ function [population] = CreatePopulation(type)
 end
 
 function [population] = RandomPopulation() 
+  %%Cria uma população aleatória
   global N_OPERATIONS;
   global N_PARTICLES;
   global TIME;
@@ -22,6 +24,7 @@ function [population] = RandomPopulation()
 end  
 
 function [population] = EstPopulation(perc)
+  %%Cria uma população estocástica com base nas regras de atribuição de Pezzella(2003)
   global N_OPERATIONS;
   global N_PARTICLES;
   global N_MACHINES;

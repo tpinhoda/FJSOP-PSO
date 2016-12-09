@@ -5,6 +5,7 @@ end
 
 
 function[makespan nschedule gantt] = MakeSpanSched(particle,schedule)
+    %%Verifica o fitness de cada agendamento e retorna seu makespan e a matriz de gannt
     global N_MACHINES;
     global OPERATIONS;
     global N_JOBS;
